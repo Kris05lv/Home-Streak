@@ -1,0 +1,6 @@
+click==8.1.8
+colorama==0.4.6
+pytest==8.3.5
+rich==13.9.4
+typer==0.15.2
+python-dateutil==2.8.2

@@ -1,6 +1,6 @@
 # Home-Streak
 
-This is a fun command-line habit tracker designed to promote healthy habits within the family through game-like point system. The tracker allows individual users to join a household and compete amongst each other by gaining points for each habit they complete.
+This is a fun command-line habit tracker designed to promote healthy habits within the family through a game-like point system. The tracker allows individual users to join a household and compete amongst each other by gaining points for each habit they complete.
 
 ## Features
 * Track daily and weekly habits
@@ -41,7 +41,7 @@ This is a fun command-line habit tracker designed to promote healthy habits with
 
 4. Install dependencies:
    ```bash
-   pip install -r dependencies.txt
+   pip install -r requirements.txt
    ```
 
 ## Usage
@@ -77,7 +77,38 @@ The application uses a JSON file (`data.json`) to persistently store all habit t
 * Habit definitions and completion records
 * Streak information
 
-## Future enhancements:
+## Testing
+To run the test suite:
+```bash
+pytest
+```
 
-    Add bonus points for extra completions. 
-        •	i.e. you eat 2 fruits instead of the 1 required.
+This will run all unit tests and ensure the application is functioning correctly. The tests cover:
+* Habit management
+* User management
+* Household operations
+* Leaderboard functionality
+* Data persistence
+
+## Future Enhancements
+* Add bonus points for extra completions (e.g., eating 2 fruits instead of the required 1)
+* Add support for custom habit categories
+* Implement habit suggestions based on user preferences
+* Add weekly and monthly habit completion reports
+* Implement achievement badges for consistent habit completion
+
+## Contributing
+Contributions are welcome! Here's how you can help:
+
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/improvement`)
+3. Make your changes
+4. Run the tests to ensure everything works
+5. Commit your changes (`git commit -am 'Add new feature'`)
+6. Push to the branch (`git push origin feature/improvement`)
+7. Create a Pull Request
+
+Please make sure to update tests as appropriate and adhere to the existing coding style.
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
