@@ -9,7 +9,7 @@ from click.testing import CliRunner
 from cli import create_household, add_user, add_habit, add_bonus_habit
 from cli import complete_habit, list_habits, view_leaderboard, reset_monthly_scores
 from cli import view_top_performers, view_past_rankings, clear_data
-from services import data_manager
+from services.data_manager import DataManager
 
 @pytest.fixture
 def runner():
@@ -92,6 +92,8 @@ def test_reset_monthly_scores(runner):
 
 def test_view_top_performers(runner):
     """Test viewing top performers."""
+    # Clear data first
+    runner.invoke(clear_data)
     result = runner.invoke(view_top_performers)
     assert result.exit_code == 0
     # Initially there should be no top performers
@@ -99,6 +101,8 @@ def test_view_top_performers(runner):
 
 def test_view_past_rankings(runner):
     """Test viewing past rankings."""
+    # Clear data first
+    runner.invoke(clear_data)
     result = runner.invoke(view_past_rankings)
     assert result.exit_code == 0
     # Initially there should be no past rankings

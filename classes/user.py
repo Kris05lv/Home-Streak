@@ -130,14 +130,14 @@ class User:
             User: A new User instance with the data from the dictionary
 
         Raises:
-            KeyError: If required data fields are missing from the dictionary
-            ValueError: If data is not a dictionary or if points is negative
+            ValueError: If required data fields are missing from the dictionary or if data is not a dictionary
+            ValueError: If points is negative
         """
         if not isinstance(data, dict):
             raise ValueError("Data must be a dictionary")
 
         if "username" not in data:
-            raise KeyError("Username is required")
+            raise ValueError("Username is required")
 
         points = data.get("points", 0)
         if not isinstance(points, (int, float)) or points < 0:

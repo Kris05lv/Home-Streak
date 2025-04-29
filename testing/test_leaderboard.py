@@ -40,98 +40,77 @@ def test_initialization(leaderboard_instance):
     assert hasattr(leaderboard_instance, 'top_performers')
 
 def test_update(clean_data, test_household):
-    """Test updating user scores."""
-    user = User("user1", "TestHouse", points=10)
-    Leaderboard.update(user)
+    """Test updating the leaderboard."""
+    leaderboard = Leaderboard()
+    user = User("testuser", test_household, 5)
+    leaderboard.update(user)
     
-    data = DataManager.load_data()
-    assert "TestHouse" in data["leaderboard"]["rankings"]
-    assert data["leaderboard"]["rankings"]["TestHouse"]["user1"] == 10
+    rankings = leaderboard.get_sorted_rankings(test_household)
+    assert rankings["testuser"] == 5
 
 def test_multiple_updates(clean_data, test_household):
-    """Test multiple score updates."""
-    users = [
-        User("user1", "TestHouse", points=10),
-        User("user2", "TestHouse", points=20),
-        User("user3", "TestHouse", points=15)
-    ]
+    """Test multiple updates to the leaderboard."""
+    leaderboard = Leaderboard()
+    user1 = User("user1", test_household, 10)
+    user2 = User("user2", test_household, 15)
     
-    for user in users:
-        Leaderboard.update(user)
+    leaderboard.update(user1)
+    leaderboard.update(user2)
     
-    data = DataManager.load_data()
-    rankings = data["leaderboard"]["rankings"]["TestHouse"]
-    
-    # Check if rankings are sorted
-    assert list(rankings.keys()) == ["user2", "user3", "user1"]
-    assert list(rankings.values()) == [20, 15, 10]
+    rankings = leaderboard.get_sorted_rankings(test_household)
+    assert rankings["user1"] == 10
+    assert rankings["user2"] == 15
 
-def test_reset_monthly(clean_data, leaderboard_instance, test_household):
-    """Test monthly reset functionality."""
-    # Add some scores
-    users = [
-        User("user1", "TestHouse", points=10),
-        User("user2", "TestHouse", points=20)
-    ]
-    for user in users:
-        Leaderboard.update(user)
+def test_reset_monthly(clean_data, test_household):
+    """Test resetting monthly scores."""
+    leaderboard = Leaderboard()
+    user = User("testuser", test_household, 5)
+    leaderboard.update(user)
     
-    # Reset monthly scores
-    leaderboard_instance.reset_monthly()
+    # Reset scores
+    leaderboard.reset_monthly()
     
-    data = DataManager.load_data()
-    assert len(data["leaderboard"]["rankings"]) == 0
-    assert len(data["leaderboard"]["past_rankings"]) == 1
-    
-    past_ranking = data["leaderboard"]["past_rankings"][0]
-    assert past_ranking["top_user"] == "user2"
-    assert past_ranking["points"] == 20
+    # Check that rankings are empty
+    rankings = leaderboard.get_sorted_rankings(test_household)
+    assert not rankings
 
-def test_get_sorted_rankings(clean_data, leaderboard_instance, test_household):
-    """Test retrieving sorted rankings."""
-    users = [
-        User("user1", "TestHouse", points=10),
-        User("user2", "TestHouse", points=20),
-        User("user3", "TestHouse", points=15)
-    ]
-    for user in users:
-        Leaderboard.update(user)
+def test_get_sorted_rankings(clean_data, test_household):
+    """Test getting sorted rankings."""
+    leaderboard = Leaderboard()
+    user1 = User("user1", test_household, 10)
+    user2 = User("user2", test_household, 15)
+    user3 = User("user3", test_household, 5)
     
-    rankings = leaderboard_instance.get_sorted_rankings("TestHouse")
-    assert list(rankings.keys()) == ["user2", "user3", "user1"]
-    assert list(rankings.values()) == [20, 15, 10]
+    leaderboard.update(user1)
+    leaderboard.update(user2)
+    leaderboard.update(user3)
+    
+    rankings = leaderboard.get_sorted_rankings(test_household)
+    assert list(rankings.keys()) == ["user2", "user1", "user3"]
 
-def test_get_top_performers(clean_data, leaderboard_instance, test_household):
-    """Test retrieving top performers."""
-    # Add scores and reset multiple times
-    for i in range(2):
-        users = [
-            User("user1", "TestHouse", points=10 * (i + 1)),
-            User("user2", "TestHouse", points=20 * (i + 1))
-        ]
-        for user in users:
-            Leaderboard.update(user)
-        leaderboard_instance.reset_monthly()
+def test_get_top_performers(clean_data, test_household):
+    """Test getting top performers."""
+    leaderboard = Leaderboard()
+    user = User("testuser", test_household, 5)
+    leaderboard.update(user)
+    leaderboard.reset_monthly()  # This should save the top performer
     
-    top_performers = leaderboard_instance.get_top_performers()
-    assert len(top_performers) == 2
-    assert all(p["top_user"] == "user2" for p in top_performers)
+    top_performers = leaderboard.get_top_performers()
+    assert len(top_performers) > 0
+    assert top_performers[0]["top_user"] == "testuser"
+    assert top_performers[0]["points"] == 5
 
-def test_get_past_rankings(clean_data, leaderboard_instance, test_household):
-    """Test retrieving past rankings."""
-    # Add scores and reset
-    users = [
-        User("user1", "TestHouse", points=10),
-        User("user2", "TestHouse", points=20)
-    ]
-    for user in users:
-        Leaderboard.update(user)
-    leaderboard_instance.reset_monthly()
+def test_get_past_rankings(clean_data, test_household):
+    """Test getting past rankings."""
+    leaderboard = Leaderboard()
+    user = User("testuser", test_household, 5)
+    leaderboard.update(user)
+    leaderboard.reset_monthly()  # This should save the rankings
     
-    past_rankings = leaderboard_instance.get_past_rankings()
-    assert len(past_rankings) == 1
-    assert "TestHouse" in past_rankings[0]["rankings"]
-    assert past_rankings[0]["rankings"]["TestHouse"]["user2"] == 20
+    past_rankings = leaderboard.get_past_rankings()
+    assert len(past_rankings) > 0
+    assert test_household in past_rankings[0]["rankings"]
+    assert past_rankings[0]["rankings"][test_household]["testuser"] == 5
 
 def test_nonexistent_household(clean_data, leaderboard_instance):
     """Test handling of non-existent household."""

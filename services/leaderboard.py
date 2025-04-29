@@ -48,28 +48,21 @@ class Leaderboard:
         """Save the current state to the data store."""
         save_data(self.data)
 
-    @staticmethod
-    def update(user: 'User'):
+    def update(self, user):
         """Update the leaderboard with a user's points."""
-        data = load_data()
-        if "leaderboard" not in data:
-            data["leaderboard"] = {"rankings": {}, "past_rankings": []}
-        
-        if user.household not in data["leaderboard"]["rankings"]:
-            data["leaderboard"]["rankings"][user.household] = {}
-        
-        # Update user points
-        data["leaderboard"]["rankings"][user.household][user.username] = user.points
-        
-        # Sort rankings immediately after update
-        rankings = data["leaderboard"]["rankings"][user.household]
-        sorted_rankings = dict(sorted(
-            rankings.items(),
-            key=lambda item: item[1],
-            reverse=True
-        ))
-        data["leaderboard"]["rankings"][user.household] = sorted_rankings
-        save_data(data)
+        household_name = user.household
+        username = user.username
+        points = user.points
+
+        if "leaderboard" not in self.data:
+            self.data["leaderboard"] = {"rankings": {}, "past_rankings": []}
+
+        if household_name not in self.data["leaderboard"]["rankings"]:
+            self.data["leaderboard"]["rankings"][household_name] = {}
+
+        self.data["leaderboard"]["rankings"][household_name][username] = points
+        self.rankings = self.data["leaderboard"]["rankings"]
+        save_data(self.data)
 
     def get_sorted_rankings(self, household_name):
         """Returns sorted rankings for a household."""
@@ -79,7 +72,7 @@ class Leaderboard:
         
         rankings = data["leaderboard"]["rankings"][household_name]
         if not rankings:
-            logging.warning("No rankings found for household '%s'." % household_name)
+            logging.warning("No rankings found for household '%s'", household_name)
             return {}
         
         sorted_rankings = dict(sorted(
@@ -140,3 +133,10 @@ class Leaderboard:
         data["leaderboard"]["rankings"] = {}
         self.rankings = {}
         save_data(data)
+
+    def reset_state(self):
+        """Reset the leaderboard state."""
+        self.data = {"leaderboard": {"rankings": {}, "past_rankings": []}}
+        self.rankings = self.data["leaderboard"]["rankings"]
+        self.past_rankings = self.data["leaderboard"]["past_rankings"]
+        self.top_performers = {}
