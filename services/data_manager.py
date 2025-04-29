@@ -4,10 +4,11 @@ in a habit tracking application.
 It includes functionality for loading and saving data, creating households, 
 adding users, and managing habits."""
 import logging
+import json
 from datetime import datetime, timedelta
-from services.data_store import load_data, save_data
 from services.leaderboard import Leaderboard
 from classes.user import User
+import os
 
 logging.basicConfig(level=logging.INFO)
 
@@ -18,55 +19,39 @@ class DataManager:
     This class provides methods for loading and saving data, creating households, 
     adding users, and managing habits.
     """
+    DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data.json")
+
     @staticmethod
     def load_data():
-        """Load data from the data.json file."""
+        """Load data from JSON file."""
         try:
-            data = load_data()
-            # Initialize data structure if empty
-            if not data:
-                data = {
-                    "households": {},
-                    "habits": [],
-                    "bonus_habits": [],
-                    "leaderboard": {"rankings": {}, "past_rankings": []},
-                    "streaks": {},
-                    "completed_habits": {}
-                }
-                save_data(data)
-            # Ensure all required keys exist
-            required_keys = [
-                "households", "habits", "bonus_habits", 
-                "leaderboard", "streaks", "completed_habits"
-            ]
-            for key in required_keys:
-                if key not in data:
-                    data[key] = [] if key in ["habits", "bonus_habits"] else {}
-            if "leaderboard" in data and isinstance(data["leaderboard"], dict):
-                if "rankings" not in data["leaderboard"]:
-                    data["leaderboard"]["rankings"] = {}
-                if "past_rankings" not in data["leaderboard"]:
-                    data["leaderboard"]["past_rankings"] = []
-            else:
-                data["leaderboard"] = {"rankings": {}, "past_rankings": []}
-            return data
+            with open(DataManager.DATA_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
         except FileNotFoundError:
-            logging.info("No data.json found. Creating new data structure.")
             data = {
                 "households": {},
                 "habits": [],
                 "bonus_habits": [],
-                "leaderboard": {"rankings": {}, "past_rankings": []},
-                "streaks": {},
-                "completed_habits": {}
+                "user_data": {},
+                "leaderboard": {
+                    "rankings": {},
+                    "past_rankings": [],
+                    "top_performers": []
+                }
             }
-            save_data(data)
-            return data
+            DataManager.save_data(data)
+        return data
 
     @staticmethod
     def save_data(data):
-        """Saves data to JSON file."""
-        save_data(data)
+        """Save data to JSON file."""
+        def date_handler(obj):
+            if hasattr(obj, 'isoformat'):
+                return obj.isoformat()
+            raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
+        with open(DataManager.DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4, default=date_handler)
 
     @staticmethod
     def create_household(household_name):
@@ -84,19 +69,37 @@ class DataManager:
     def save_user(user):
         """Adds a user to an existing household."""
         data = DataManager.load_data()
-        if user.household not in data["households"]:
-            msg = f"Household '{user.household}' does not exist"
-            logging.error("Household '%s' does not exist. Please create it first.", user.household)
+        
+        # Convert household to string if it's not already
+        household_name = str(user.household)
+        
+        if household_name not in data["households"]:
+            msg = f"Household '{household_name}' does not exist"
+            logging.error("Household '%s' does not exist. Please create it first.", household_name)
             raise ValueError(msg)
-        if user.username in data["households"][user.household]["members"]:
-            logging.warning("User '%s' is already in household '%s'.", user.username, user.household)
-            return
-        data["households"][user.household]["members"].append(user.username)
-        data["households"][user.household]["points"][user.username] = user.points
-        # Initialize user's streaks and completed habits
-        data["streaks"][user.username] = {}
-        if "completed_habits" not in data:
-            data["completed_habits"] = {}
+
+        # Initialize or update user data in household
+        if user.username not in data["households"][household_name]["members"]:
+            data["households"][household_name]["members"].append(user.username)
+            data["households"][household_name]["points"][user.username] = user.points
+
+        # Initialize or update user data
+        if "user_data" not in data:
+            data["user_data"] = {}
+
+        data["user_data"][user.username] = {
+            "household": household_name,
+            "points": user.points,
+            "habits_completed": user.habits_completed,
+            "streaks": user.streaks,
+            "bonus_claimed": user.bonus_claimed
+        }
+
+        # Initialize leaderboard data for the user
+        if household_name not in data["leaderboard"]["rankings"]:
+            data["leaderboard"]["rankings"][household_name] = {}
+        data["leaderboard"]["rankings"][household_name][user.username] = user.points
+
         DataManager.save_data(data)
 
     @staticmethod
@@ -119,92 +122,87 @@ class DataManager:
 
     @staticmethod
     def complete_habit(username, habit_name):
-        """Marks a habit as completed, tracks streaks, updates points, and leaderboard."""
+        """Complete a habit for a user."""
         data = DataManager.load_data()
+        
+        # Get user data
+        user = DataManager.get_user(username)
+        if not user:
+            logging.error("User '%s' not found in any household.", username)
+            return False
+
+        # First check if it's a bonus habit
+        bonus_habit = next((h for h in data["bonus_habits"] if h["name"] == habit_name), None)
+        if bonus_habit:
+            return DataManager.claim_bonus_habit(username, habit_name)
+
+        # Get regular habit data
         habit = next((h for h in data["habits"] if h["name"] == habit_name), None)
         if not habit:
             logging.error("Habit '%s' not found.", habit_name)
             return False
 
-        # Find user's household
-        user_household = None
-        for household, details in data["households"].items():
-            if username in details["members"]:
-                user_household = household
-                break
+        # Get current date for tracking
+        current_date = datetime.now().date()
 
-        if not user_household:
-            logging.error("User '%s' not found in any household.", username)
+        # Check if habit is already completed for today
+        if user.has_completed_today(habit_name):
+            logging.warning(
+                "Habit '%s' already completed by user '%s' today.",
+                habit_name,
+                username
+            )
             return False
 
-        # Initialize streak tracking for the user if needed
-        if username not in data["streaks"]:
-            data["streaks"][username] = {}
-        if habit_name not in data["streaks"][username]:
-            data["streaks"][username][habit_name] = 0
+        # Track habit completion
+        user.track_completion(habit_name, current_date, habit["periodicity"], habit["points"])
 
-        # Update streak and points
-        data["streaks"][username][habit_name] += 1
-        data["households"][user_household]["points"][username] += habit["points"]
-
-        # Record completion
-        today = datetime.now().strftime("%Y-%m-%d")
-        if today not in data["completed_habits"]:
-            data["completed_habits"][today] = {}
-        data["completed_habits"][today][habit_name] = username
+        # Save user state
+        DataManager.save_user(user)
 
         # Update leaderboard
-        user = User(username, user_household, points=data["households"][user_household]["points"][username])
         DataManager.update_leaderboard(user)
 
-        DataManager.save_data(data)
         return True
 
     @staticmethod
     def claim_bonus_habit(username, habit_name):
         """Claim a bonus habit (only once per period)."""
         data = DataManager.load_data()
+        
+        # Get user data
+        user = DataManager.get_user(username)
+        if not user:
+            logging.error("User '%s' not found in any household.", username)
+            return False
+
+        # Get bonus habit data
         habit = next((h for h in data["bonus_habits"] if h["name"] == habit_name), None)
         if not habit:
             logging.error("Bonus habit '%s' not found.", habit_name)
             return False
 
-        # Find user's household
-        user_household = None
-        for household, details in data["households"].items():
-            if username in details["members"]:
-                user_household = household
-                break
+        # Get current date for tracking
+        current_date = datetime.now().date()
 
-        if not user_household:
-            logging.error("User '%s' not found in any household.", username)
+        # Check if habit is already completed for today
+        if user.has_completed_today(habit_name):
+            logging.warning(
+                "Bonus habit '%s' already claimed by user '%s' today.",
+                habit_name,
+                username
+            )
             return False
 
-        # Check if the habit has already been claimed in the current period
-        today = datetime.now()
-        period_start = today - timedelta(days=today.weekday() if habit["periodicity"] == "weekly" else 0)
-        period_start = period_start.strftime("%Y-%m-%d")
+        # Track bonus habit completion
+        user.track_completion(habit_name, current_date, habit["periodicity"], habit["points"])
 
-        # Check if already claimed in this period
-        for date, completions in data["completed_habits"].items():
-            if date >= period_start and habit_name in completions and completions[habit_name] == username:
-                logging.warning("User '%s' has already claimed bonus habit '%s' this period.", 
-                              username, habit_name)
-                return False
-
-        # Record completion and update points
-        today_str = today.strftime("%Y-%m-%d")
-        if today_str not in data["completed_habits"]:
-            data["completed_habits"][today_str] = {}
-        data["completed_habits"][today_str][habit_name] = username
-        data["households"][user_household]["points"][username] += habit["points"]
+        # Save user state
+        DataManager.save_user(user)
 
         # Update leaderboard
-        user = User(username, user_household, 
-                   points=data["households"][user_household]["points"][username])
         DataManager.update_leaderboard(user)
 
-        DataManager.save_data(data)
         return True
 
     @staticmethod
@@ -224,73 +222,53 @@ class DataManager:
 
     @staticmethod
     def get_habit(habit_name):
-        """Fetch a single habit from stored data."""
+        """Get a habit's data from the data store."""
         data = DataManager.load_data()
-        habit = next((h for h in data["habits"] if h["name"] == habit_name), None)
-        if habit:
-            return habit
-        return next((h for h in data["bonus_habits"] if h["name"] == habit_name), None)
+        return next((h for h in data["habits"] if h["name"] == habit_name), None)
 
     @staticmethod
     def reset_habits():
-        """Reset habits based on their periodicity (daily/weekly)."""
+        """Reset all habits and streaks."""
         data = DataManager.load_data()
-        today = datetime.now()
-
-        # Reset streaks for habits that haven't been completed in their period
-        for username, user_streaks in data["streaks"].items():
-            for habit_name, streak in user_streaks.items():
-                habit = DataManager.get_habit(habit_name)
-                if not habit:
-                    continue
-
-                # Determine period start based on habit periodicity
-                days_to_subtract = today.weekday() if habit["periodicity"] == "weekly" else 0
-                period_start = (today - timedelta(days=days_to_subtract)).strftime("%Y-%m-%d")
-
-                # Check if habit was completed in current period
-                completed_in_period = False
-                for date, completions in data["completed_habits"].items():
-                    if (date >= period_start and 
-                            habit_name in completions and 
-                            completions[habit_name] == username):
-                        completed_in_period = True
-                        break
-
-                if not completed_in_period:
-                    data["streaks"][username][habit_name] = 0
-
+        data["completed_habits"] = {}
+        data["streaks"] = {}
         DataManager.save_data(data)
 
     @staticmethod
     def clear_data():
-        """Clears the contents of the data.json file."""
+        """Clear all data."""
         data = {
             "households": {},
             "habits": [],
             "bonus_habits": [],
             "leaderboard": {"rankings": {}, "past_rankings": []},
             "streaks": {},
-            "completed_habits": {}
+            "completed_habits": {},
+            "user_data": {}
         }
-        try:
-            save_data(data)
-            # Reset leaderboard state
-            leaderboard.reset_state()
-            logging.info("data.json has been cleared successfully.")
-        except IOError as e:
-            logging.error("Failed to clear data.json: %s", str(e))
-            raise
+        DataManager.save_data(data)
 
     @staticmethod
     def get_user(username):
-        """Get a user's data from the data store."""
+        """Get a user by username."""
         data = DataManager.load_data()
-        for household_name, household_data in data["households"].items():
-            if username in household_data["members"]:
-                points = household_data["points"].get(username, 0)
-                return User(username, household_name, points=points)
-        return None
+        
+        # Check if user exists in user_data
+        if "user_data" not in data or username not in data["user_data"]:
+            logging.error("User '%s' not found in any household.", username)
+            return None
+
+        # Get user data
+        user_data = data["user_data"][username]
+        household = user_data["household"]
+
+        # Create user object
+        user = User(username, household, user_data["points"])
+        user.habits_completed = user_data.get("habits_completed", {})
+        user.streaks = user_data.get("streaks", {})
+        user.bonus_claimed = user_data.get("bonus_claimed", {})
+
+        return user
 
     @staticmethod
     def load_users():
@@ -360,7 +338,16 @@ class DataManager:
     @staticmethod
     def update_leaderboard(user):
         """Update the leaderboard with a user's points."""
-        leaderboard.update(user)
+        data = DataManager.load_data()
+        if user.household not in data["households"]:
+            logging.error("Household '%s' not found.", user.household)
+            return
+
+        if "points" not in data["households"][user.household]:
+            data["households"][user.household]["points"] = {}
+
+        data["households"][user.household]["points"][user.username] = user.points
+        DataManager.save_data(data)
 
     @staticmethod
     def get_sorted_rankings(household_name):

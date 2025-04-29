@@ -31,8 +31,18 @@ def create_household(household_name):
 def add_user(username, household_name):
     """Add a user to a household."""
     try:
+        # First check if household exists
+        data = DataManager.load_data()
+        if household_name not in data["households"]:
+            raise ValueError(f"Household '{household_name}' does not exist")
+
+        # Create and save user
         user = User(username, household_name, 0)
+        user.habits_completed = {}
+        user.streaks = {}
+        user.bonus_claimed = {}
         DataManager.save_user(user)
+        
         # Initialize user in leaderboard with 0 points
         leaderboard.update(user)
         click.echo(f"User '{username}' added to household '{household_name}'")
@@ -69,27 +79,19 @@ def add_bonus_habit(name, periodicity, points):
 @click.argument("username")
 @click.argument("habit_name")
 def complete_habit(username, habit_name):
-    """Mark a habit as completed and update streaks. Bonus habits are automatically claimed."""
-    try:
-        habit = DataManager.get_habit(habit_name)
-        if not habit:
-            click.echo(f"Habit '{habit_name}' not found.")
-            return
-
-        if habit.get("is_bonus", False):
-            success = DataManager.claim_bonus_habit(username, habit_name)
-            if success:
-                click.echo(f"Bonus Habit '{habit_name}' claimed by '{username}'.")
-            else:
-                click.echo(f"Bonus Habit '{habit_name}' is already taken or unavailable for this period.")
+    """Complete a habit for a user."""
+    # Try to complete as a regular habit first
+    result = DataManager.complete_habit(username, habit_name)
+    if result:
+        # Check if it was a bonus habit
+        data = DataManager.load_data()
+        bonus_habit = next((h for h in data["bonus_habits"] if h["name"] == habit_name), None)
+        if bonus_habit:
+            click.echo(f"Bonus Habit '{habit_name}' claimed by '{username}'.")
         else:
-            success = DataManager.complete_habit(username, habit_name)
-            if success:
-                click.echo(f"'{habit_name}' completed by '{username}'. Points updated!")
-            else:
-                click.echo(f"'{habit_name}' could not be completed.")
-    except (ValueError, KeyError) as e:
-        click.echo(f"Error: {str(e)}")
+            click.echo(f"Habit '{habit_name}' completed by '{username}'.")
+    else:
+        click.echo(f"Habit '{habit_name}' not found.")
 
 @click.command()
 def list_habits():
@@ -146,27 +148,27 @@ def reset_monthly_scores():
 @click.command()
 def view_top_performers():
     """View the top performers of past months."""
-    top_performers = leaderboard.get_top_performers()
-    if not top_performers:
+    data = DataManager.load_data()
+    if "leaderboard" not in data or "top_performers" not in data["leaderboard"] or not data["leaderboard"]["top_performers"]:
         click.echo("No top performers recorded yet.")
-    else:
-        click.echo("Top Performers by Month:")
-        for entry in top_performers:
-            click.echo(f"{entry['month']}: {entry['top_user']} with {entry['points']} points")
+        return
+    click.echo("Top Performers by Month:")
+    for entry in data["leaderboard"]["top_performers"]:
+        click.echo(f"{entry['month']}: {entry['top_user']} with {entry['points']} points")
 
 @click.command()
 def view_past_rankings():
     """View past leaderboard rankings."""
-    past_rankings = leaderboard.get_past_rankings()
-    if not past_rankings:
+    data = DataManager.load_data()
+    if "leaderboard" not in data or "past_rankings" not in data["leaderboard"] or not data["leaderboard"]["past_rankings"]:
         click.echo("No past rankings recorded.")
-    else:
-        for entry in past_rankings:
-            click.echo(f"\n {entry['month']} Rankings:")
-            for household, rankings in entry["rankings"].items():
-                click.echo(f"Household: {household}")
-                for user, points in rankings.items():
-                    click.echo(f"   {user}: {points} points")
+        return
+    for entry in data["leaderboard"]["past_rankings"]:
+        click.echo(f"\n {entry['month']} Rankings:")
+        for household, rankings in entry["rankings"].items():
+            click.echo(f"Household: {household}")
+            for user, points in rankings.items():
+                click.echo(f"   {user}: {points} points")
 
 @click.command()
 def clear_data():

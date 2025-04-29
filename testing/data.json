@@ -1,0 +1,67 @@
+{
+    "households": {},
+    "habits": [],
+    "bonus_habits": [],
+    "leaderboard": {
+        "rankings": {
+            "TestHouse": {
+                "testuser": 0,
+                "user1": 0,
+                "user2": 0
+            }
+        },
+        "past_rankings": [
+            {
+                "month": "04-2025",
+                "rankings": {
+                    "TestHouse": {
+                        "testuser": 0,
+                        "user1": 0,
+                        "user2": 0
+                    }
+                },
+                "top_user": null,
+                "points": 0
+            },
+            {
+                "month": "04-2025",
+                "rankings": {
+                    "TestHouse": {
+                        "testuser": 0,
+                        "user1": 0,
+                        "user2": 0
+                    }
+                },
+                "top_user": null,
+                "points": 0
+            },
+            {
+                "month": "04-2025",
+                "rankings": {
+                    "TestHouse": {
+                        "testuser": 0,
+                        "user1": 0,
+                        "user2": 0
+                    }
+                },
+                "top_user": null,
+                "points": 0
+            },
+            {
+                "month": "04-2025",
+                "rankings": {
+                    "TestHouse": {
+                        "testuser": 0,
+                        "user1": 0,
+                        "user2": 0
+                    }
+                },
+                "top_user": null,
+                "points": 0
+            }
+        ]
+    },
+    "streaks": {},
+    "completed_habits": {},
+    "user_data": {}
+}

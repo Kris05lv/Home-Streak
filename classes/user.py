@@ -15,11 +15,11 @@ class User:
 
         Args:
             username (str): The username of the user
-            household (Household): The household the user belongs to
+            household (str): The name of the household the user belongs to
             points (int, optional): Initial points for the user. Defaults to 0
         """
         self.username = username
-        self.household = household
+        self.household = str(household)  # Convert to string to ensure consistency
         self.habits_completed = {}
         self.streaks = {}
         self.bonus_claimed = {}
@@ -35,7 +35,10 @@ class User:
             bool: True if the habit has been completed today, False otherwise.
         """
         today = datetime.now().date()
-        return habit_name in self.habits_completed and self.habits_completed[habit_name][-1] == today
+        return (
+            habit_name in self.habits_completed and
+            self.habits_completed[habit_name][-1] == today
+        )
 
     def track_completion(self, habit_name, date, periodicity, points=None):
         """Track the completion of a habit on a specific date.
@@ -108,7 +111,7 @@ class User:
         """
         return {
             'username': self.username,
-            'household': self.household.name if hasattr(self.household, 'name') else str(self.household),
+            'household': self.household,  # Already a string
             'habits_completed': {
                 habit: [date.strftime("%Y-%m-%d") for date in dates]
                 for habit, dates in self.habits_completed.items()
@@ -124,13 +127,13 @@ class User:
 
         Args:
             data (dict): Dictionary containing user data
-            household (Household, optional): The household object. Required for new users.
+            household (str, optional): The household name. Required for new users.
 
         Returns:
             User: A new User instance with the data from the dictionary
 
         Raises:
-            ValueError: If required data fields are missing from the dictionary or if data is not a dictionary
+            ValueError: If required data fields are missing or if data is not a dictionary
             ValueError: If points is negative
         """
         if not isinstance(data, dict):
@@ -143,21 +146,11 @@ class User:
         if not isinstance(points, (int, float)) or points < 0:
             raise ValueError("Points must be a non-negative number")
 
-        user = cls(data["username"], household, points)
+        user = cls(data["username"], household or data["household"], points)
         user.habits_completed = {
             habit: [datetime.strptime(date, "%Y-%m-%d").date() for date in dates]
             for habit, dates in data.get("habits_completed", {}).items()
         }
         user.streaks = data.get("streaks", {})
         user.bonus_claimed = data.get("bonus_claimed", {})
-        user.points = points
-
-        # Validate the created user object
-        if not isinstance(user.streaks, dict):
-            raise ValueError("Streaks must be a dictionary")
-        if not isinstance(user.bonus_claimed, dict):
-            raise ValueError("Bonus claimed must be a dictionary")
-        if not isinstance(user.habits_completed, dict):
-            raise ValueError("Habits completed must be a dictionary")
-
         return user
