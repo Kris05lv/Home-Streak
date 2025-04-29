@@ -21,7 +21,7 @@ This is a fun command-line habit tracker designed to promote healthy habits with
 ### Setup
 1. Clone the repository:
    ```bash
-   git clone https://
+   git clone https://github.com/Kris05lv/Home-Streak.git
    ```
 
 2. Create a virtual environment (recommended):
