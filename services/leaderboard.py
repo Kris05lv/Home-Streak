@@ -33,7 +33,7 @@ class Leaderboard:
                 }
             return data
         except (FileNotFoundError, json.JSONDecodeError) as e:
-            logging.warning(f"Error loading data.json: {e}")
+            logging.warning("Error loading data.json: %s", e)
             return {
                 "households": {},
                 "habits": [],
@@ -79,7 +79,7 @@ class Leaderboard:
         
         rankings = data["leaderboard"]["rankings"][household_name]
         if not rankings:
-            logging.warning(f"No rankings found for household '{household_name}'.")
+            logging.warning("No rankings found for household '%s'." % household_name)
             return {}
         
         sorted_rankings = dict(sorted(

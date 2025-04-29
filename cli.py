@@ -10,7 +10,6 @@ from services.data_manager import DataManager
 from services.leaderboard import Leaderboard
 from classes.habit import Habit
 from classes.user import User
-
 logging.basicConfig(level=logging.INFO)
 leaderboard = Leaderboard()
 
@@ -41,8 +40,10 @@ def add_user(username, household_name):
         click.echo(f"User '{username}' added to household '{household_name}'")
     except ValueError as e:
         click.echo(f"Error: {str(e)}")
-    except Exception as e:
-        click.echo(f"Error: Failed to add user. {str(e)}")
+    except (FileNotFoundError, PermissionError) as e:
+        click.echo(f"Error: Could not access data storage. {str(e)}")
+    except KeyError as e:
+        click.echo(f"Error: Household '{household_name}' not found.")
 
 @click.command()
 @click.argument("name")

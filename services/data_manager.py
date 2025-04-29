@@ -324,3 +324,6 @@ class DataManager:
             if bonus_points > 0:
                 bonus_history.append({"date": date, "habit_bonus": bonus_points})
         return bonus_history
+
+# Create a singleton instance of DataManager
+data_manager = DataManager()

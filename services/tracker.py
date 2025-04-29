@@ -20,7 +20,7 @@ class Tracker:
             with open(self.filename, 'r', encoding='utf-8') as file:
                 return json.load(file)
         except (FileNotFoundError, json.JSONDecodeError):
-            logging.warning(f"Data file '{self.filename}' not found or corrupt.")
+            logging.warning("Data file '%s' not found or corrupt." % self.filename)
             return {"users": [], "habits": [], "households": []}
 
     def save_data(self):

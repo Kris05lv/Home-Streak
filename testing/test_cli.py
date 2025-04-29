@@ -1,12 +1,15 @@
 """Test module for CLI commands.
 This module provides comprehensive testing for all CLI commands in the habit tracker.
 """
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pytest
 from click.testing import CliRunner
 from cli import create_household, add_user, add_habit, add_bonus_habit
 from cli import complete_habit, list_habits, view_leaderboard, reset_monthly_scores
 from cli import view_top_performers, view_past_rankings, clear_data
-from services.data_manager import DataManager
+from services import data_manager
 
 @pytest.fixture
 def runner():

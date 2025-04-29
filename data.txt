@@ -1,0 +1,217 @@
+{
+    "households": {
+        "Ons4": {
+            "members": [
+                "Kris",
+                "Len",
+                "Mamma"
+            ],
+            "points": {
+                "Kris": 615,
+                "Len": 360,
+                "Mamma": 640
+            }
+        }
+    },
+    "habits": [
+        {
+            "name": "Make bed",
+            "periodicity": "daily",
+            "created_at": "2025-03-13T15:35:45.133000",
+            "points": 5,
+            "is_bonus": false
+        },
+        {
+            "name": "Eat a fruit",
+            "periodicity": "daily",
+            "created_at": "2025-03-13T15:36:19.629142",
+            "points": 5,
+            "is_bonus": false
+        },
+        {
+            "name": "Read 10 pages",
+            "periodicity": "daily",
+            "created_at": "2025-03-13T15:37:59.963011",
+            "points": 5,
+            "is_bonus": false
+        },
+        {
+            "name": "Drink water",
+            "periodicity": "daily",
+            "created_at": "2025-03-13T15:38:16.023741",
+            "points": 5,
+            "is_bonus": false
+        },
+        {
+            "name": "Clean room",
+            "periodicity": "weekly",
+            "created_at": "2025-03-13T15:38:32.970258",
+            "points": 5,
+            "is_bonus": false
+        }
+    ],
+    "bonus_habits": [
+        {
+            "name": "Take out trash",
+            "periodicity": "weekly",
+            "created_at": "2025-03-13T15:39:03.708436",
+            "points": 10,
+            "is_bonus": true
+        },
+        {
+            "name": "Wash dishes",
+            "periodicity": "daily",
+            "created_at": "2025-03-13T15:39:23.824615",
+            "points": 10,
+            "is_bonus": true
+        },
+        {
+            "name": "Do washing",
+            "periodicity": "weekly",
+            "created_at": "2025-03-13T15:39:40.854887",
+            "points": 10,
+            "is_bonus": true
+        }
+    ],
+    "leaderboard": {
+        "rankings": {
+            "Ons4": {
+                "Mamma": 640,
+                "Kris": 615,
+                "Len": 360
+            }
+        },
+        "past_rankings": []
+    },
+    "streaks": {
+        "Kris": {
+            "Make bed": 20,
+            "Drink water": 25,
+            "Read 10 pages": 28,
+            "Eat a fruit": 10,
+            "Clean room": 4
+        },
+        "Len": {
+            "Make bed": 18,
+            "Eat a fruit": 8,
+            "Read 10 pages": 12,
+            "Drink water": 14,
+            "Clean room": 4
+        },
+        "Mamma": {
+            "Drink water": 28,
+            "Eat a fruit": 12,
+            "Read 10 pages": 1,
+            "Make bed": 28,
+            "Clean room": 4
+        }
+    },
+    "completed_habits": {
+        "2025-10": {
+            "Take out trash": "Mamma"
+        },
+        "2025-03-13": {
+            "Wash dishes": "Kris"
+        },
+        "2025-03-14": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-03-15": {
+            "Wash dishes": "Len"
+        },
+        "2025-03-16": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-11": {
+            "Do washing": "Kris",
+            "Take out trash": "Len"
+        },
+        "2025-03-17": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-03-18": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-03-19": {
+            "Wash dishes": "Kris"
+        },
+        "2025-03-20": {
+            "Wash dishes": "Len"
+        },
+        "2025-03-21": {
+            "Wash dishes": "Kris"
+        },
+        "2025-03-22": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-03-23": {
+            "Wash dishes": "Kris"
+        },
+        "2025-12": {
+            "Take out trash": "Mamma",
+            "Do washing": "Kris"
+        },
+        "2025-03-24": {
+            "Wash dishes": "Kris"
+        },
+        "2025-03-25": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-03-26": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-03-27": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-03-28": {
+            "Wash dishes": "Kris"
+        },
+        "2025-03-29": {
+            "Wash dishes": "Kris"
+        },
+        "2025-03-30": {
+            "Wash dishes": "Kris"
+        },
+        "2025-13": {
+            "Take out trash": "Mamma",
+            "Do washing": "Kris"
+        },
+        "2025-03-31": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-04-01": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-04-02": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-04-03": {
+            "Wash dishes": "Len"
+        },
+        "2025-04-04": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-04-05": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-04-06": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-14": {
+            "Take out trash": "Mamma",
+            "Do washing": "Kris"
+        },
+        "2025-04-07": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-04-08": {
+            "Wash dishes": "Len"
+        },
+        "2025-04-09": {
+            "Wash dishes": "Mamma"
+        },
+        "2025-04-10": {
+            "Wash dishes": "Mamma"
+        }
+    }
+}
