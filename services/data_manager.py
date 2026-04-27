@@ -92,7 +92,8 @@ class DataManager:
             "points": user.points,
             "habits_completed": user.habits_completed,
             "streaks": user.streaks,
-            "bonus_claimed": user.bonus_claimed
+            "bonus_claimed": user.bonus_claimed,
+            "is_admin": getattr(user, 'is_admin', False)
         }
 
         # Initialize leaderboard data for the user

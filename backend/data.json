@@ -1,0 +1,23 @@
+{
+    "households": {},
+    "habits": [],
+    "bonus_habits": [],
+    "leaderboard": {
+        "rankings": {
+            "TestFam": {
+                "Len": 0
+            },
+            "Ons4": {
+                "Kris": 0
+            },
+            "Test": {
+                "Kris": 0
+            },
+            "Onstest": {
+                "Len": 0
+            }
+        },
+        "past_rankings": []
+    },
+    "streaks": {}
+}

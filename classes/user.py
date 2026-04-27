@@ -10,13 +10,14 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 class User:
     """A class representing a user in a habit tracking application."""
-    def __init__(self, username, household, points=0):
+    def __init__(self, username, household, points=0, is_admin=False):
         """Initialize a new User instance.
 
         Args:
             username (str): The username of the user
             household (str): The name of the household the user belongs to
             points (int, optional): Initial points for the user. Defaults to 0
+            is_admin (bool, optional): Whether user is household admin. Defaults to False
         """
         self.username = username
         self.household = str(household)  # Convert to string to ensure consistency
@@ -24,6 +25,7 @@ class User:
         self.streaks = {}
         self.bonus_claimed = {}
         self.points = points
+        self.is_admin = is_admin
 
     def has_completed_today(self, habit_name):
         """Check if a habit has been completed today.
@@ -118,7 +120,8 @@ class User:
             },
             'streaks': self.streaks,
             'bonus_claimed': self.bonus_claimed,
-            'points': self.points
+            'points': self.points,
+            'is_admin': self.is_admin
         }
 
     @classmethod
@@ -146,7 +149,8 @@ class User:
         if not isinstance(points, (int, float)) or points < 0:
             raise ValueError("Points must be a non-negative number")
 
-        user = cls(data["username"], household or data["household"], points)
+        is_admin = data.get("is_admin", False)
+        user = cls(data["username"], household or data["household"], points, is_admin)
         user.habits_completed = {
             habit: [datetime.strptime(date, "%Y-%m-%d").date() for date in dates]
             for habit, dates in data.get("habits_completed", {}).items()

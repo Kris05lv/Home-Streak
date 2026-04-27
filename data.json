@@ -1,0 +1,36 @@
+{
+    "households": {
+        "Test": {
+            "members": [
+                "Kris"
+            ],
+            "points": {
+                "Kris": 0
+            }
+        }
+    },
+    "habits": [],
+    "bonus_habits": [],
+    "user_data": {
+        "Kris": {
+            "household": "Test",
+            "points": 0,
+            "habits_completed": {},
+            "streaks": {},
+            "bonus_claimed": {},
+            "is_admin": true
+        }
+    },
+    "leaderboard": {
+        "rankings": {
+            "Test": {
+                "Kris": 0
+            }
+        },
+        "past_rankings": [],
+        "top_performers": []
+    },
+    "household_passwords": {
+        "Test": "123"
+    }
+}
